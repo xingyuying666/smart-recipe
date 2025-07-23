@@ -1,0 +1,41 @@
+spring:
+  # Data source configuration
+  datasource:
+    username: root
+    password: admin
+    url: jdbc:mysql://127.0.0.1:3306/smart-recipe?serverTimezone=Hongkong&useAffectedRows=true&characterEncoding=utf-8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  # Email configuration
+  mail:
+    username: 373675032@qq.com
+    password:
+    host: smtp.qq.com
+    port: 465
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          socketFactory:
+            port: 465
+            class: javax.net.ssl.SSLSocketFactory
+            fallback: false
+    valid: 5
+    title: "AI assistant - user"
+    template: "Your dynamic verification code is：<strong style='color: red'>%s</strong>，%dValid within minutes. Please do not disclose if it is not operated by yourself."
+# Log configuration
+logging:
+  level:
+    world.world.xuewei.dao.mapper: debug
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# Alibaba Cloud Tongyi Qianwen configuration
+ai-key: sk-08e71240d91244dfb487623fd0f51912
