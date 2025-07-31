@@ -37,7 +37,7 @@ public class ApiService {
             Message message = output.getChoices().get(0).getMessage();
             return message.getContent();
         } catch (Exception e) {
-            return "The smart doctor is not online now. Please try again later～";
+            return "The AI assistant is not online now. Please try again later～";
         }
     }
 }

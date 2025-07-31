@@ -66,7 +66,7 @@ body{--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: 
 <div class="elementor-element elementor-element-3807e525 elementor-widget elementor-widget-image" data-id="3807e525" data-element_type="widget" data-widget_type="image.default">
 <div class="elementor-widget-container">
 <a href="https://htmldesigntemplates.com">
-<img width="375" height="102" src="https://htmldesigntemplates.com/wp-content/uploads/2021/06/logo.png" class="attachment-full size-full" alt="" loading="lazy" srcset="https://htmldesigntemplates.com/wp-content/uploads/2021/06/logo.png 375w, https://htmldesigntemplates.com/wp-content/uploads/2021/06/logo-300x82.png 300w" sizes="(max-width: 375px) 100vw, 375px" /> </a>
+<img width="375" height="102" src="https://htmldesigntemplates.com/wp-content/uploads/2021/06/" class="attachment-full size-full" alt="" loading="lazy" srcset="https://htmldesigntemplates.com/wp-content/uploads/2021/06/ 375w, https://htmldesigntemplates.com/wp-content/uploads/2021/06/logo-300x82.png 300w" sizes="(max-width: 375px) 100vw, 375px" /> </a>
 </div>
 </div>
 </div>

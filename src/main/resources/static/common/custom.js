@@ -138,35 +138,73 @@ function updateProfile() {
  * 上传头像
  */
 function uploadPhoto() {
-    var formdata = new FormData();
-    formdata.append("file", $("#img-file").get(0).files[0]);
+    const fileInput = document.getElementById("img-file");
+    const file = fileInput.files[0];
+    const messagesDiv = document.getElementById("messages");
+
+    if (!file) {
+        alert("Please select a file");
+        return;
+    }
+
+    // 1. 首先立即显示用户上传的图片
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        // 创建用户消息显示上传的图片
+        messagesDiv.innerHTML += `
+            <div class="msg-sent">
+                <div class="msg-content">
+                    <p>刚刚</p>
+                    <div class="msg">
+                        <img src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 5px;">
+                    </div>
+                </div>
+            </div>
+        `;
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    };
+    reader.readAsDataURL(file);
+
+    // 2. 然后发送到服务器获取AI回复
+    const formdata = new FormData();
+    formdata.append("file", file);
+    formdata.append("content", "");
+
     $.ajax({
-        async: false,
         type: "POST",
         url: "message/query",
         dataType: "json",
         data: formdata,
-        contentType: false,//ajax上传图片需要添加
-        processData: false,//ajax上传图片需要添加
+        processData: false,
+        contentType: false,
         success: function (data) {
             if (data['code'] === 'SUCCESS') {
-                message = data['message'];
-                $('#messages').append("<div class=\"msg-received\">\n" +
-                    "                   <div class=\"msg-image\">\n" +
-                    "                      <img src=\"assets/images/team/user-2.jpg\" alt=\"image\">\n" +
-                    "                   </div>\n" +
-                    "                   <div class=\"msg-content\">\n" +
-                    "                      <p>Now</p>\n" +
-                    "                      <p class=\"msg\">\n" + message +
-                    "                      </p>\n" +
-                    "                   </div>\n" +
-                    "                  </div>");
-                messageInit();
+                const message = data['message'];
+                // 添加AI回复
+                messagesDiv.innerHTML += `
+                    <div class="msg-received">
+                        <div class="msg-image">
+                            <img src="assets/images/team/user-2.jpg" alt="image">
+                        </div>
+                        <div class="msg-content">
+                            <p>Now</p>
+                            <p class="msg">${message}</p>
+                        </div>
+                    </div>
+                `;
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                // 清空文件input
+                fileInput.value = '';
             }
+        },
+        error: function (err) {
+            console.error("Upload failed", err);
+            // 可以在这里添加错误提示
+            layer.msg("上传失败，请重试");
         }
     });
 }
-
 /**
  * 修改资料
  */
@@ -478,16 +516,21 @@ function send() {
     if (!message) {
         return;
     }
+
     $('#messages').append("<div class='msg-received msg-sent' style=\"margin-right: 20px\"><div class='msg-content'><p>Now</p><p class='msg'>" + message + "</p></div></div>");
     messageInit();
     $('#message').val('');
+
+    // ✅ 每次重新创建 formdata
+    let formdata = new FormData();
+    formdata.append("content", message);
+
     $.ajax({
         type: "POST",
         url: "message/query",
-        data: {
-            file: null,
-            content: message,
-        },
+        data: formdata,
+        processData: false,    // 必须加上：阻止 jQuery 处理数据
+        contentType: false,    // 必须加上：阻止 jQuery 设置内容类型
         dataType: "json",
         success: function (data) {
             if (data['code'] === 'SUCCESS') {
@@ -506,7 +549,6 @@ function send() {
             }
         }
     });
-
 }
 
 

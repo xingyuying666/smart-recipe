@@ -12,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 import world.xyy.dto.RespResult;
 import world.xyy.entity.User;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -31,13 +33,11 @@ public class MessageController extends BaseController<User> {
      * Send a message
      */
     @PostMapping("/query")
-    public RespResult query(@RequestParam("file") MultipartFile file, String content) throws IOException {
+    public RespResult query(@RequestParam(value = "file", required = false) MultipartFile file,  @RequestParam(value = "content", required = false)String content) throws IOException {
 
         String fpath = "";
-        String count = "";
-        if (!file.isEmpty()) {
+        if (file != null && !file.isEmpty()) {
             fpath = "";
-
             String path = "D:/img";
             System.out.println("Folder name" + file.getName());
             if (StringUtils.isEmpty(file)) {
@@ -91,16 +91,20 @@ public class MessageController extends BaseController<User> {
 
     public static List<String> extractKeywords(String imagePath) {
         Tesseract tesseract = new Tesseract();
+        tesseract.setDatapath("E:\\tessdata");
         tesseract.setLanguage("chi_sim");
 
+
+
         try {
+
             String extractedText = tesseract.doOCR(new File(imagePath));
             // Extract key words. Here, simple Spaces are used for separation and filtering
             return Arrays.stream(extractedText.split("\\s+"))
                     .filter(word -> word.length() > 1) // Filter out words with a length less than 2
                     .distinct() // duplicate removal
                     .collect(Collectors.toList());
-        } catch (TesseractException e) {
+        } catch (Exception e) {
             System.err.println("OCR识别错误: " + e.getMessage());
             return null;
         }
@@ -115,4 +119,5 @@ public class MessageController extends BaseController<User> {
         }
         return filename;
     }
+
 }
