@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>识图生成菜谱 | Smart Recipe</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, "Microsoft YaHei", sans-serif; color: #202820; background: #f5f8f3; }
+    body { margin: 0; }
+    main { max-width: 760px; margin: 48px auto; padding: 0 20px 48px; }
+    h1 { margin-bottom: 8px; } .muted { color: #607060; line-height: 1.6; }
+    form, #recipe { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 8px 32px #31423114; margin-top: 24px; }
+    input, textarea, button { width: 100%; box-sizing: border-box; font: inherit; margin-top: 8px; }
+    textarea { min-height: 80px; padding: 10px; } input { padding: 9px 0; }
+    button { border: 0; border-radius: 10px; padding: 12px; background: #2f7a4d; color: white; cursor: pointer; font-weight: 700; }
+    button:disabled { opacity: .55; cursor: wait; } #recipe[hidden] { display: none; }
+    .meta { color: #356448; font-weight: 600; } li { line-height: 1.65; } .note { color: #7d5129; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>拍张菜，生成菜谱</h1>
+  <p class="muted">上传清晰的成品菜照片，AI 会推测菜品、食材和做法。结果仅供参考，请按实际食材和口味调整。</p>
+  <form id="upload-form">
+    <label>菜品图片（JPG、PNG 或 WebP，最大 10MB）<input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+    <label>偏好（可选，例如“少油、两人份、不要香菜”）<textarea id="preferences" name="preferences" maxlength="500"></textarea></label>
+    <button id="submit" type="submit">识别并生成菜谱</button>
+    <p id="status" class="muted" aria-live="polite"></p>
+  </form>
+  <section id="recipe" hidden></section>
+</main>
+<script>
+  const form = document.querySelector('#upload-form');
+  const button = document.querySelector('#submit');
+  const status = document.querySelector('#status');
+  const recipeElement = document.querySelector('#recipe');
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const image = document.querySelector('#image').files[0];
+    if (!image) return;
+    button.disabled = true;
+    status.textContent = '正在识别菜品并生成菜谱…';
+    recipeElement.hidden = true;
+    try {
+      const response = await fetch('/api/recipes/from-image', { method: 'POST', body: new FormData(form) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || '生成失败，请稍后重试。');
+      renderRecipe(data);
+      status.textContent = '';
+    } catch (error) {
+      status.textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+  }
+  function list(items, formatter = escapeHtml) {
+    return `<ul>${items.map(item => `<li>${formatter(item)}</li>`).join('')}</ul>`;
+  }
+  function renderRecipe(recipe) {
+    const ingredients = recipe.ingredients.map(item =>
+      `<strong>${escapeHtml(item.name)}</strong> ${escapeHtml(item.quantity)}${item.note ? `（${escapeHtml(item.note)}）` : ''}`);
+    recipeElement.innerHTML = `
+      <h2>${escapeHtml(recipe.title)}</h2>
+      <p>${escapeHtml(recipe.description)}</p>
+      <p class="meta">${recipe.servings} 人份 · 备料 ${recipe.prepTimeMinutes} 分钟 · 烹饪 ${recipe.cookTimeMinutes} 分钟</p>
+      <h3>食材</h3>${list(ingredients, value => value)}
+      <h3>步骤</h3>${list(recipe.steps)}
+      <h3>小贴士</h3>${list(recipe.cookingTips)}
+      <p class="note">识别说明：${recipe.recognitionNotes.map(escapeHtml).join('；')}</p>`;
+    recipeElement.hidden = false;
+  }
+</script>
+</body>
+</html>
